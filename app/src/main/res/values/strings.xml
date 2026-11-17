@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AttendanceControl</string>
+    <string name="main_title">Система контроля посещаемости</string>
+    <string name="students">Студенты</string>
+    <string name="attendance">Отметить посещаемость</string>
+    <string name="statistics">Статистика</string>
+    <string name="back">Назад</string>
+</resources>

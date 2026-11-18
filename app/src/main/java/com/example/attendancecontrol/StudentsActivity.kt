@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,8 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 class StudentsActivity : AppCompatActivity() {
 
-    // Временный список (в Спринте 4 заменим на базу данных Room)
-    private val studentList = mutableListOf<Student>()
+    private val studentList get() = AttendanceData.students
     private lateinit var adapter: StudentAdapter
     private var nextId = 1
 
@@ -20,24 +20,24 @@ class StudentsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_students)
 
+        nextId = (studentList.maxOfOrNull { it.id } ?: 0) + 1
+
         val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
         val btnAddStudent: Button = findViewById(R.id.btnAddStudent)
         val btnBack: Button = findViewById(R.id.btnBack)
 
-        // Настраиваем список
         recyclerView.layoutManager = LinearLayoutManager(this)
         adapter = StudentAdapter(studentList) { student -> showDeleteDialog(student) }
         recyclerView.adapter = adapter
 
-        // Кнопка "Добавить"
-        btnAddStudent.setOnClickListener {
-            showAddStudentDialog()
-        }
+        btnAddStudent.setOnClickListener { showAddStudentDialog() }
+        btnBack.setOnClickListener { finish() }
+        updateEmptyState()
+    }
 
-        // Кнопка "Назад"
-        btnBack.setOnClickListener {
-            finish()
-        }
+    private fun updateEmptyState() {
+        val emptyView = findViewById<TextView?>(R.id.tvEmptyStudents)
+        emptyView?.visibility = if (studentList.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     private fun showAddStudentDialog() {
@@ -46,26 +46,31 @@ class StudentsActivity : AppCompatActivity() {
         val etFirstName = dialogView.findViewById<EditText>(R.id.etFirstName)
         val etGroup = dialogView.findViewById<EditText>(R.id.etGroup)
 
-        AlertDialog.Builder(this)
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Новый студент")
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
+            .setPositiveButton("Сохранить", null)
+            .setNegativeButton("Отмена", null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val lastName = etLastName.text.toString().trim()
                 val firstName = etFirstName.text.toString().trim()
                 val group = etGroup.text.toString().trim()
 
-                // Проверка на пустые поля
                 if (lastName.isEmpty() || firstName.isEmpty() || group.isEmpty()) {
-                    Toast.makeText(this, "Ошибка: Заполните все поля!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Заполните фамилию, имя и группу", Toast.LENGTH_SHORT).show()
                 } else {
-                    val newStudent = Student(nextId++, firstName, lastName, group)
-                    studentList.add(newStudent)
+                    studentList.add(Student(nextId++, firstName, lastName, group))
                     adapter.notifyItemInserted(studentList.size - 1)
+                    updateEmptyState()
                     Toast.makeText(this, "Студент добавлен", Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
                 }
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun showDeleteDialog(student: Student) {
@@ -77,6 +82,7 @@ class StudentsActivity : AppCompatActivity() {
                 if (index != -1) {
                     studentList.removeAt(index)
                     adapter.notifyItemRemoved(index)
+                    updateEmptyState()
                 }
             }
             .setNegativeButton("Нет", null)

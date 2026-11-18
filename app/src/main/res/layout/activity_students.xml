@@ -11,14 +11,27 @@
         android:layout_height="wrap_content"
         android:text="Добавить студента" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp">
 
-    <!-- Кнопка возврата в главное меню -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tvEmptyStudents"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Список студентов пока пуст. Добавьте студентов."
+            android:textSize="16sp"
+            android:padding="24dp" />
+    </FrameLayout>
+
     <Button
         android:id="@+id/btnBack"
         android:layout_width="match_parent"
